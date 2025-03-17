@@ -80,7 +80,7 @@ module controller (
             
             S_COMPUTE_4: begin
                  $display("Time: %0t | STATE: COMPUTE_4 (Processing...)", $time);
-                if (compute_done || continue_while==0)begin
+                if (continue_while==0)begin
                     next_state = S_DONE;
                  $display("Time: %0t | STATE: COMPUTE_4 (completed)", $time);
                 end

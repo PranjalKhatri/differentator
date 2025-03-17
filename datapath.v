@@ -62,7 +62,7 @@ module datapath (
     end
 
     // Multiplexers to switch between different registers at each state
-    always @(*) begin
+    always @(posedge clk) begin
         case (state)
             S_COMPUTE_1: begin
                  $display("Time: %0t | STATE: COMPUTE_1 (Performing computations)", $time);
