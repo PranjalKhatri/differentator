@@ -25,8 +25,8 @@ module differentiator_tb;
     always #5 clk = ~clk;  // Generate a clock with period of 10ns
 
     initial begin
-        $monitor("Time: %0t | clk: %b | reset: %b | ready: %b | s1: %b | s2: %b | s3: %b | s4: %b | in: %b | out: %d | valid: %b",
-                 $time, clk, reset, ready, s1, s2, s3, s4, in, out, valid);
+        // $monitor("Time: %0t | clk: %b | reset: %b | ready: %b | s1: %b | s2: %b | s3: %b | s4: %b | in: %b | out: %d | valid: %b",
+        //          $time, clk, reset, ready, s1, s2, s3, s4, in, out, valid);
         // Initialize inputs
         clk = 0;
         reset = 1;

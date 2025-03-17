@@ -29,7 +29,7 @@ void diffeqsolver(int x, int u, int dx, int a) {
 
 void compute() {
 
-    diffeqsolver(3,9,5,7);
+    diffeqsolver(3,9,1,7);
 }
 
 signed main() {

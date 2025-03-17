@@ -35,7 +35,7 @@ module controller (
     end
 
         // Next state logic
-    always @(*) begin
+    always @(posedge clk) begin
         next_state = current_state;  // Default: stay in current state
         
         case (current_state)

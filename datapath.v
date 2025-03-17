@@ -63,26 +63,27 @@ module datapath (
             compute_done_next <= 0; // Reset compute_done_next by default
             
             if (load_x) begin
-                x <= $signed(in);  // Read x
+                x <= in;  // Read x
                 $display("Time: %0t | INPUT: X loaded with value %d", $time, in);
             end else if (load_dx) begin
-                dx <= $signed(in); // Read dx
+                dx <= in; // Read dx
                 $display("Time: %0t | INPUT: DX loaded with value %d", $time, in);
             end else if (load_a) begin
-                a <= $signed(in);  // Read a
+                a <= in;  // Read a
                 $display("Time: %0t | INPUT: A loaded with value %d", $time, in);
             end else if (load_u) begin
-                u <= $signed(in);  // Read u
+                u <= in;  // Read u
                 $display("Time: %0t | INPUT: U loaded with value %d", $time, in);
             end
         end
     end
 
-    // Multiplexers to switch between different registers at each state
     always @(posedge clk) begin
         continue_while <= 0; // Default reset
         out <= y;
-        
+        if(compute_done == 1'b1)begin
+        $display("Time: %0t | STATE: %b t1(3dx) = %d | t2(ux)=%d | t3(x+dx) = %d | t4(udx)= %d | t5(ux-y) = %d | t6(3dx(ux-y)) = %d | t7(y+udx)=%d | t8(u-3dx(ux-y))=%d| cd = %b", $time, state, t1, t2, t3,t4,t5,t6,t7,t8,compute_done);
+        end
         case (state)
             S_COMPUTE_1: begin
                 $display("Time: %0t | STATE: COMPUTE_1 (Performing computations)", $time);
@@ -90,45 +91,58 @@ module datapath (
                     r1 = dx;
                     r2 = 2'b11; // 3 in binary
                     t1 = w1; // calc for 3dx
-                    $display("Time: %0t | COMPUTATION: 3dx = %d", $time, t1);
+                    // $display("Time: %0t | COMPUTATION: 3dx = %d", $time, t1);
                 end
                 // Block 2 (r3, r4, t2)
                 begin
                     r3 = u;
                     r4 = x;
                     t2 = w2; // calc for ux
-                    $display("Time: %0t | COMPUTATION: ux = %d", $time, t2);
+                    // $display("Time: %0t | COMPUTATION: ux = %d", $time, t2);
                 end
                 begin
                     add_sub_ctrl = 0; // Addition
                     r5 = x;
                     r6 = dx;
                     t3 = w3; // calc for x+dx
-                    $display("Time: %0t | COMPUTATION: x+dx = %d", $time, t3);
+                    // $display("Time: %0t | COMPUTATION: x+dx = %d", $time, t3);
                 end 
-                if(m1done && m2done && a1done) begin
+                // if(m1done && m2done && a1done && comp) begin
                     $display("Time: %0t | COMPUTATION: 3dx: %d, ux: %d,x+dx = %d", $time, t1, t2, t3);
+                if(compute_done==0 && compute_done_next==0) begin 
                     compute_done_next = 1'b1;
+                    t3=w3;
+                    t2=w2;
+                    $display("Time: %0t | COMPUTATION: 3dx: %d, ux: %d,x+dx = %d | Finished for c1", $time, t1, t2, t3);
                 end
+                // end
             end
             
             S_COMPUTE_2: begin
-                $display("Time: %0t | STATE: COMPUTE_2 (Performing computations)", $time);
+                // $display("Time: %0t | STATE: COMPUTE_2 (Performing computations)", $time);
                 begin
                     r1 = u;
                     r2 = dx;
                     t4 = w1; // calc for udx
-                    $display("Time: %0t | COMPUTATION: udx = %d", $time, t4);
+                    // $display("Time: %0t | COMPUTATION: udx = %d", $time, t4);
                 end
                 begin
                     add_sub_ctrl = 1; //subtraction
                     r5 = t2;
                     r6 = y;
                     t5 = w3; // calc for ux-y
-                    $display("Time: %0t | COMPUTATION: ux - y = %d", $time, t5);
+                    // $display("Time: %0t | COMPUTATION: ux - y = %d", $time, t5);
                 end
-                if(m1done && a1done)
+                    $display("Time: %0t | COMPUTATION: udx: %d, ux-y: %d ", $time, t4, t5);
                     compute_done_next = 1'b1;
+                if(compute_done==0 && compute_done_next==0) begin 
+                    t5=w3;
+                    t4=w1;
+                    // #10;
+                    $display("Time: %0t | COMPUTATION: udx: %d, ux-y: %d | Finished for c2", $time, t4, t5);
+                end
+                // if(m1done && a1done)
+                //     compute_done_next = 1'b1;
             end
             
             S_COMPUTE_3: begin
@@ -146,8 +160,16 @@ module datapath (
                     t7 = w3; // calc for y+udx
                     $display("Time: %0t | COMPUTATION: y + udx = %d", $time, t7);
                 end
-                if(m1done && a1done)
-                    compute_done_next = 1'b1;
+                // if(compute_done_next==0) begin
+                  
+                // end
+                 if(compute_done==0 && compute_done_next==0) begin 
+                compute_done_next = 1'b1;
+                    t5=w3;
+                    t4=w1;
+                    // #10;
+                    $display("Time: %0t | COMPUTATION: udx: %d, ux-y: %d | Finished for c2", $time, t4, t5);
+                end
             end
             
             S_COMPUTE_4: begin
@@ -163,15 +185,23 @@ module datapath (
                     u = t8;
                 end
                 
+                if(compute_done==0 && compute_done_next==0) begin 
+                    compute_done_next = 1'b1;
+                    t8=w3;
+                    x=t3;
+                    y=t7;
+                    u=t8;
+                    t4=w1;
+                    // #10;
+                    $display("Time: %0t | COMPUTATION: udx: %d, ux-y: %d | Finished for c2", $time, t4, t5);
+                end   
                 if(x < a) begin
-                    if(a1done) begin
-                        compute_done_next = 1'b1;
-                        continue_while = 1'b1;
-                        $display("Time: %0t | LOOP CONDITION: x (%d) < a (%d), continuing...", $time, x, a);
-                    end
+                    continue_while = 1'b1;
+                    $display("Time: %0t | LOOP CONDITION: x (%d) < a (%d), continuing...", $time, x, a);
+                    
                 end
                 else begin
-                    compute_done_next = 1'b1;
+                    // compute_done_next = 1'b1;
                     continue_while = 1'b0;
                     $display("Time: %0t | LOOP CONDITION: x (%d) >= a (%d), stopping...", $time, x, a);
                 end
