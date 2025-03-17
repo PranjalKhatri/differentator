@@ -118,7 +118,12 @@ module controller (
                 load_u <= 1;  // Read u
                 load_dx <= 0; load_x <= 0; load_a <= 0;
             end
-
+                else begin
+                  load_x = 0;
+                    load_dx = 0;
+                    load_u = 0;
+                    load_a = 0;
+                end
         end
 
         if (current_state==S_DONE) begin 

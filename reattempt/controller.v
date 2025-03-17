@@ -19,7 +19,7 @@ module controller (
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-        // $display("Time: %0t | STATE: IDLE (Reset Activated)", $time);
+        $display("Time: %0t | STATE: IDLE (Reset Activated)", $time);
             load_x <= 0; load_dx <= 0; load_u <= 0; load_a <= 0;
             valid<=0;
             current_state <= S_IDLE;
@@ -93,7 +93,12 @@ module controller (
             end
         endcase
     end
-
+    always @(posedge  clk or posedge reset) begin
+        if(continue_while == 0)begin
+            $display("TIME: %0t recieved signal to quit while loop",$time);
+            next_state=S_DONE;
+        end
+    end
     always @(posedge clk or posedge reset) begin
         if (current_state==S_READ) begin 
             if (s1) begin
@@ -108,6 +113,9 @@ module controller (
             end else if (s4) begin
                 load_u <= 1;  // Read u
                 load_dx <= 0; load_x <= 0; load_a <= 0;
+            end
+            else begin 
+                load_u <= 1;load_dx <= 0; load_x <= 0; load_a <= 0;
             end
         end
 

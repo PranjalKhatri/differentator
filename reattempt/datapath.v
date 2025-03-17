@@ -36,6 +36,9 @@ module datapath (
 
     reg add_sub_ctrl;  // Control for add/sub
 
+    // Register to delay compute_done by one cycle
+    reg compute_done_next;
+
     // Instantiate Functional Units
     multiplier #(.IN_WIDTH(16)) m1(.in1(v1), .in2(v2), .out(w1));
     multiplier #(.IN_WIDTH(16)) m2(.in1(v3), .in2(v4), .out(w2));
@@ -47,29 +50,36 @@ module datapath (
             x <= 0; dx <= 0; u <= 0; a <= 0; y <= 0;
             t1<=0;t2<=0;t3<=0;t4<=0;t5<=0;t6<=0;t7<=0;t8<=0;t9<=0;
             out<=0;
+            compute_done_next <= 0;
             compute_done <= 0;
-            continue_while <= 0;
+            continue_while <= 1;
             // $display("Time: %0t | RESET ACTIVATED: Registers cleared", $time);
-        end else if (load_x && state==S_READ) begin
-            x <= $signed(in);  // Read x
-            // $display("Time: %0t | INPUT: X loaded with value %d", $time, in);
-        end else if (load_dx && state==S_READ) begin
-            dx <= $signed(in); // Read dx
-             // $display("Time: %0t | INPUT: DX loaded with value %d", $time, in);
-        end else if (load_a && state==S_READ) begin
-            a <= $signed(in);  // Read a
-             // $display("Time: %0t | INPUT: A loaded with value %d", $time, in);
-        end else if (load_u && state==S_READ) begin
-            u <= $signed(in);  // Read u
-             // $display("Time: %0t | INPUT: U loaded with value %d", $time, in);
+        end 
+        else begin
+
+            if (load_x && state==S_READ) begin
+                x <= $signed(in);  // Read x
+                // $display("Time: %0t | INPUT: X loaded with value %d", $time, in);
+            end else if (load_dx && state==S_READ) begin
+                dx <= $signed(in); // Read dx
+                // $display("Time: %0t | INPUT: DX loaded with value %d", $time, in);
+            end else if (load_a && state==S_READ) begin
+                a <= $signed(in);  // Read a
+                // $display("Time: %0t | INPUT: A loaded with value %d", $time, in);
+            end else if (load_u && state==S_READ) begin
+                u <= $signed(in);  // Read u
+                // $display("Time: %0t | INPUT: U loaded with value %d", $time, in);
+            end
         end
     end
 
     // Multiplexers to switch between different registers at each state
     always @(posedge clk) begin
-        // $display("Time: %0t | STATE: %b | x = %d | u= %d | y = %d | dx = %d ", $time, state, x, u, y, dx);
-        compute_done <= 0; // Default reset
-        continue_while <= 0; // Default reset
+        $display("Time: %0t | STATE: %b | x = %d | u= %d | y = %d | dx = %d ", $time, state, x, u, y, dx);
+        // compute_done <= 0; // Default reset
+        // continue_while <= 0; // Default reset
+        compute_done <= compute_done_next;
+        compute_done_next <= 0;
         out <= y;
         case (state)
             S_COMPUTE_1: begin
@@ -86,7 +96,8 @@ module datapath (
                 t1 <= w1; // 3dx
                 t2 <= w2; // ux
                 t3 <= w3; // x + dx
-                compute_done <= 1'b1;
+                // compute_done <= 1'b1;
+                compute_done_next <= 1'b1;
             end
             S_COMPUTE_2: begin
                  // $display("Time: %0t | STATE: COMPUTE_2 (Performing computations)", $time);
@@ -98,7 +109,8 @@ module datapath (
 
                 t4 <= w1; // udx
                 t5 <= w3; // ux - y
-                compute_done <= 1'b1;
+                // compute_done <= 1'b1;
+                compute_done_next <= 1'b1;
             end
             S_COMPUTE_3: begin
                 v1 <= t1; // 3dx
@@ -109,7 +121,8 @@ module datapath (
 
                 t6 <= w1; // 3dx(ux - y)
                 t7 <= w3; // y + udx
-                compute_done <= 1'b1;
+                // compute_done <= 1'b1;
+                compute_done_next <= 1'b1;
             end
             S_COMPUTE_4: begin
                 // $display("Time: %0t | STATE: COMPUTE_4 (Performing computations)", $time);
@@ -122,20 +135,22 @@ module datapath (
                 y <= t7;  // y+udx
                 u <= w3;  // u - 3dx(ux - y)
                 
+                compute_done_next <= 1'b1;
                 if (x < a) begin
                     continue_while <= 1'b1;
                 end else begin
-                    compute_done <= 1'b1;
+                    // compute_done <= 1'b1;
                     continue_while <= 1'b0;
                 end
             end
             S_DONE: begin
                 // out <= y;
-                compute_done <= 1'b1;
+                compute_done_next <= 1'b1;
+                // compute_done <= 1'b1;
             end
         endcase
 
         // Print debug information
-        $display("Time: %0t | STATE: %b | x = %d | u = %d | y = %d ", $time, state, x, u, y);
+        $display("Time: %0t | STATE: %b | x = %d | u = %d | y = %d | dx = %d | a = %d", $time, state, x, u, y,dx,a);
     end
 endmodule
