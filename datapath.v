@@ -149,15 +149,16 @@ module datapath (
                     y = t7;
                     u=t8;
                 end
+                if(x < a)begin
                 if(a1done)
                     compute_done = 1'b1;
                 else
                     compute_done = 0;
-                if(x < a)begin
                      $display("Time: %0t | LOOP CONDITION: x (%d) < a (%d), continuing...", $time, x, a);
                   continue_while = 1'b1;
                 end
                 else begin
+                    compute_done = 1'b1;
                     $display("Time: %0t | LOOP CONDITION: x (%d) >= a (%d), stopping...", $time, x, a);
                     continue_while = 1'b0;
                 end

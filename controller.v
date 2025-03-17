@@ -85,7 +85,7 @@ module controller (
                  $display("Time: %0t | STATE: COMPUTE_4 (completed)", $time);
                 end
                 else begin
-                    if(continue_while==1)
+                    if(continue_while==1 && compute_done==1'b1)
                     next_state = S_COMPUTE_1;
                     else next_state=S_DONE;
                 end
