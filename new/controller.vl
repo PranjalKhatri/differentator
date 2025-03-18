@@ -16,13 +16,17 @@ localparam S_IDLE = 4'b0000;
 localparam S_READ = 4'b0001;
 localparam S_COMPUTE_1 = 4'b0010;
 localparam S_COMPUTE_1_IS = 4'b0011;
-localparam S_COMPUTE_2 = 4'b0100;
-localparam S_COMPUTE_2_IS = 4'b0101;
-localparam S_COMPUTE_3 = 4'b0110;
-localparam S_COMPUTE_3_IS = 4'b0111;
-localparam S_COMPUTE_4 = 4'b1000;
-localparam S_COMPUTE_4_IS = 4'b1001;
-localparam S_DONE = 4'b1010;
+localparam S_COMPUTE_1_IS_IS = 4'b0100;
+localparam S_COMPUTE_2 = 4'b0101;
+localparam S_COMPUTE_2_IS = 4'b0110;
+localparam S_COMPUTE_2_IS_IS = 4'b0111;
+localparam S_COMPUTE_3 = 4'b1000;
+localparam S_COMPUTE_3_IS = 4'b1001;
+localparam S_COMPUTE_3_IS_IS = 4'b1010;
+localparam S_COMPUTE_4 = 4'b1011;
+localparam S_COMPUTE_4_IS = 4'b1100;
+localparam S_COMPUTE_4_IS_IS = 4'b1101;
+localparam S_DONE = 4'b1110;
 
 assign state = current_state;
 initial begin
@@ -85,25 +89,38 @@ always @(posedge clk) begin
                 next_state = S_COMPUTE_1_IS;
             end
             S_COMPUTE_1_IS: begin
+                    next_state = S_COMPUTE_1_IS_IS;
+            end
+            S_COMPUTE_1_IS_IS: begin
                     next_state = S_COMPUTE_2;
             end
             S_COMPUTE_2: begin
                 next_state = S_COMPUTE_2_IS;
             end
             S_COMPUTE_2_IS: begin
+                    next_state = S_COMPUTE_2_IS_IS;
+            end
+            S_COMPUTE_2_IS_IS: begin
                     next_state = S_COMPUTE_3;
             end
             S_COMPUTE_3: begin
                 next_state = S_COMPUTE_3_IS;
             end
             S_COMPUTE_3_IS: begin
+                    next_state = S_COMPUTE_3_IS_IS;
+            end
+            S_COMPUTE_3_IS_IS: begin
                     next_state = S_COMPUTE_4;
             end
             S_COMPUTE_4: begin
                 next_state = S_COMPUTE_4_IS;
             end
             S_COMPUTE_4_IS: begin
-                if(continue_while)begin
+                next_state = S_COMPUTE_4_IS_IS;
+            end
+            S_COMPUTE_4_IS_IS: begin
+                $display("here we are while is %d",continue_while);
+                if(continue_while==1'b1)begin
                     next_state = S_COMPUTE_1;
                 end
                 else begin

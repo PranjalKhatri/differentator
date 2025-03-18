@@ -14,55 +14,59 @@ localparam S_IDLE = 4'b0000;
 localparam S_READ = 4'b0001;
 localparam S_COMPUTE_1 = 4'b0010;
 localparam S_COMPUTE_1_IS = 4'b0011;
-localparam S_COMPUTE_2 = 4'b0100;
-localparam S_COMPUTE_2_IS = 4'b0101;
-localparam S_COMPUTE_3 = 4'b0110;
-localparam S_COMPUTE_3_IS = 4'b0111;
-localparam S_COMPUTE_4 = 4'b1000;
-localparam S_COMPUTE_4_IS = 4'b1001;
-localparam S_DONE = 4'b1010;
+localparam S_COMPUTE_1_IS_IS = 4'b0100;
+localparam S_COMPUTE_2 = 4'b0101;
+localparam S_COMPUTE_2_IS = 4'b0110;
+localparam S_COMPUTE_2_IS_IS = 4'b0111;
+localparam S_COMPUTE_3 = 4'b1000;
+localparam S_COMPUTE_3_IS = 4'b1001;
+localparam S_COMPUTE_3_IS_IS = 4'b1010;
+localparam S_COMPUTE_4 = 4'b1011;
+localparam S_COMPUTE_4_IS = 4'b1100;
+localparam S_COMPUTE_4_IS_IS = 4'b1101;
+localparam S_DONE = 4'b1110;
 
 reg signed [3:0] dx, a;  
 reg signed [4:0] x;  
-reg signed [15:0] u, y;  // Wider bit-width to handle intermediate results
+reg signed [32:0] u, y;  // Wider bit-width to handle intermediate results
 
 reg add_sub_ctrl;
-reg signed [7:0]  m1;
-reg signed [7:0]  m2;
-reg signed [7:0]  m3;
-reg signed [7:0]  m4;
-reg signed [7:0]  a1;
-reg signed [7:0]  a2;
+reg signed [32:0]  m1;
+reg signed [32:0]  m2;
+reg signed [32:0]  m3;
+reg signed [32:0]  m4;
+reg signed [32:0]  a1;
+reg signed [32:0]  a2;
 
-reg signed [15:0] t1;
-reg signed [15:0] t2;
-reg signed [15:0] t3;
-reg signed [15:0] t4;
-reg signed [15:0] t5;
-reg signed [15:0] t6;
-reg signed [15:0] t7;
-reg signed [15:0] t8;
+reg signed [32:0] t1;
+reg signed [32:0] t2;
+reg signed [32:0] t3;
+reg signed [32:0] t4;
+reg signed [32:0] t5;
+reg signed [32:0] t6;
+reg signed [32:0] t7;
+reg signed [32:0] t8;
 
-wire signed [15:0] m1o;//output of multiplier 1 
-wire signed [15:0] m2o; //output of multiplier 2
-wire signed [15:0] a1o;//output of adder/subtractor 1 
+wire signed [32:0] m1o;//output of multiplier 1 
+wire signed [32:0] m2o; //output of multiplier 2
+wire signed [32:0] a1o;//output of adder/subtractor 1 
 
 multiplier #(
-    .IN_WIDTH(8)
+    .IN_WIDTH(32)
 ) m1_inst (
     .in1(m1),
     .in2(m2),
     .out(m1o)
 );
 multiplier #(
-    .IN_WIDTH(8)
+    .IN_WIDTH(32)
 ) m2_inst (
     .in1(m3),
     .in2(m4),
     .out(m2o)
 );
 adder_subtractor #(
-    .WIDTH(16)
+    .WIDTH(32)
 ) a1_inst (
     .in1(a1),
     .in2(a2),
@@ -70,7 +74,7 @@ adder_subtractor #(
     .out(a1o)
 );
 initial begin
-   continue_while = 0;
+   continue_while = 1;
         x = 0;
         dx = 0;
         a = 0;
@@ -95,7 +99,7 @@ initial begin
 end
 always @(posedge clk or posedge state)begin
     if(reset)begin
-        continue_while = 0;
+        continue_while = 1;
         x = 0;
         dx = 0;
         a = 0;
@@ -154,7 +158,9 @@ always @(posedge clk or posedge state)begin
                 t1 = m1o;//3dx
                 t2 = m2o;//ux
                 t3 = a1o;//x+dx
-                $display("Time: %0t | Computation finished for 1IS t1(3dx): %d , t2(ux) = %d, t3(x+dx) = %d", $time,t1,t2,t3);
+            end
+            S_COMPUTE_1_IS_IS: begin 
+                // $display("Time: %0t | Computation finished for 1IS t1(3dx): %d , t2(ux) = %d, t3(x+dx) = %d", $time,t1,t2,t3);
             end
             S_COMPUTE_2: begin
                 m1 = u;
@@ -166,7 +172,10 @@ always @(posedge clk or posedge state)begin
             S_COMPUTE_2_IS: begin
                 t4 = m1o;//udx
                 t5 = a1o;//ux+y
-                $display("Time: %0t | Computation finished for 2IS t4(udx): %d , t5(ux+y) = %d", $time,t4,t5);
+                // $display("Time: %0t | Computation finished for 2IS t4(udx): %d , t5(ux+y) = %d", $time,t4,t5);
+            end
+            S_COMPUTE_2_IS_IS: begin 
+                // $display("Time: %0t | Computation finished for 2IS t4(udx): %d , t5(ux+y) = %d", $time,t4,t5);
             end
 
             S_COMPUTE_3: begin
@@ -180,6 +189,9 @@ always @(posedge clk or posedge state)begin
                 t6 = m1o;//3dx(ux-y)
                 t7 = a1o;//y+udx
             end
+            S_COMPUTE_3_IS_IS: begin 
+                // $display("Time: %0t | Computation finished for 1IS t1(3dx): %d , t2(ux) = %d, t3(x+dx) = %d", $time,t1,t2,t3);
+            end
 
             S_COMPUTE_4: begin
                 add_sub_ctrl = 1;
@@ -188,17 +200,23 @@ always @(posedge clk or posedge state)begin
             end
             S_COMPUTE_4_IS: begin
                 t8 = a1o;//u-3dx(ux-y)
-                x = t3;
-                y = t7;
-                u = t8;
-                out = y;
+                x <= t3;
+                y <= t7;
+                u <= t8;
+                out <= y;
+
+            end
+            S_COMPUTE_4_IS_IS: begin
                 if(x < a)begin
-                    continue_while = 1;
-                   $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
+                    continue_while = 1'b1;
+                    $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
                 end else begin
-                   $display("Time: %0t | OUTPUT: Y = %d while over", $time, y);
+                    $display("Time: %0t | OUTPUT: Y = %d while over", $time, y);
                     continue_while = 0;
-                end
+                end 
+                        $display("t1(3dx) : %d | t2(ux) : %d | t3(x+dx) : %d | t4(udx) : %d | t5(ux+y) : %d | t6(3dx(ux+y)) : %d | t7(y+udx) : %d | t8(u-3dx(ux+y)) : %d ",t1,t2,t3,t4,t5,t6,t7,t8);
+
+                // $display("Time: %0t | Computation finished for 1IS t1(3dx): %d , t2(ux) = %d, t3(x+dx) = %d", $time,t1,t2,t3);
             end
             S_DONE: begin
                 $display("Time: %0t | OUTPUT: Y = %d", $time, y);
