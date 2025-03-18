@@ -5,12 +5,12 @@ module controller (
     input wire continue_while,
     output reg load_x, load_dx, load_u, load_a,
     output reg  valid,
-    output reg[2:0] state
+    output reg[3:0] state
 );
 
     // typedef enum reg [2:0] {S_IDLE, S_READ, S_COMPUTE_1, S_COMPUTE_2, S_COMPUTE_3, S_COMPUTE_4, S_DONE} state_t;
     // state_t current_state, next_state;
-    reg[2:0] current_state, next_state;
+    reg[3:0] current_state, next_state;
     localparam S_IDLE = 3'b000;
     localparam S_READ = 3'b001;
     localparam S_COMPUTE_1 = 3'b010;

@@ -22,7 +22,7 @@ module differentiator_tb;
     );
 
     // Clock generation
-    always #5 clk = ~clk;  // Generate a clock with period of 10ns
+    always #10 clk = ~clk;  // Generate a clock with period of 10ns
 
     initial begin
         // $monitor("Time: %0t | clk: %b | reset: %b | ready: %b | s1: %b | s2: %b | s3: %b | s4: %b | in: %b | out: %d | valid: %b",
@@ -52,7 +52,7 @@ module differentiator_tb;
         #10 s3 = 0;
 
         #10 s4 = 1;
-        #10 in = 4'b1001;   // Load u->9
+        #10 in = 4'b0010;   // Load u->2
         #10 s4 = 0;
 
         // Signal ready for computation

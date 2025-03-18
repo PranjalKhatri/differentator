@@ -1,0 +1,118 @@
+module controller(
+    input wire clk, // Clock signal
+    input wire reset, // Reset signal
+    input wire s1,s2,s3,s4, // Input signals
+    input wire continue_while,
+    input wire ready,
+    output reg[3:0] state,
+    output reg load_a,load_dx,load_x,load_u, // Load signals
+    output reg valid
+);
+    
+reg [3:0] current_state,next_state;
+localparam S_IDLE = 4'b0000;
+localparam S_READ = 4'b0001;
+localparam S_COMPUTE_1 = 4'b0010;
+localparam S_COMPUTE_1_IS = 4'b0011;
+localparam S_COMPUTE_2 = 4'b0100;
+localparam S_COMPUTE_2_IS = 4'b0101;
+localparam S_COMPUTE_3 = 4'b0110;
+localparam S_COMPUTE_3_IS = 4'b0111;
+localparam S_COMPUTE_4 = 4'b1000;
+localparam S_COMPUTE_4_IS = 4'b1001;
+localparam S_DONE = 4'b1010;
+
+initial begin
+    current_state = S_IDLE;
+    next_state = S_IDLE;
+    next_state = S_IDLE;
+    load_a = 0;
+    load_dx = 0;
+    load_x = 0;
+    load_u = 0;
+    valid = 0;
+end
+
+always @(posedge clk or posedge reset) begin
+    state = current_state;
+    $display("time: %0t State: %b", $time, state);
+    if(reset) begin
+        $display("time: %0t Resetting controller",$time);
+        next_state = S_IDLE;
+        load_a = 0;
+        load_dx = 0;
+        load_x = 0;
+        load_u = 0;
+        valid = 0;
+    end else begin
+        next_state = current_state;
+        case (current_state)
+            S_IDLE: begin
+                if(reset == 0)begin
+                    next_state = S_READ;
+                end
+            end
+            S_READ: begin
+                if (s1) begin
+                    load_x <= 1;  // Read x
+                    load_dx <= 0; load_u <= 0; load_a <= 0;
+                end else if (s2) begin
+                    load_dx <= 1; // Read dx
+                    load_x <= 0; load_u <= 0; load_a <= 0;
+                end else if (s3) begin
+                    load_a <= 1;  // Read a
+                    load_dx <= 0; load_x <= 0; load_u <= 0;
+                end else if (s4) begin
+                    load_u <= 1;  // Read u
+                    load_dx <= 0; load_x <= 0; load_a <= 0;
+                end else begin
+                    load_x = 0;
+                    load_dx = 0;
+                    load_u = 0;
+                    load_a = 0;
+                end
+                if(ready) begin
+                    next_state = S_COMPUTE_1;
+                end
+                end
+                //next state is set in the input handling block
+            S_COMPUTE_1: begin
+                next_state = S_COMPUTE_1_IS;
+            end
+            S_COMPUTE_1_IS: begin
+                    next_state = S_COMPUTE_2;
+            end
+            S_COMPUTE_2: begin
+                next_state = S_COMPUTE_2_IS;
+            end
+            S_COMPUTE_2_IS: begin
+                    next_state = S_COMPUTE_3;
+            end
+            S_COMPUTE_3: begin
+                next_state = S_COMPUTE_3_IS;
+            end
+            S_COMPUTE_3_IS: begin
+                    next_state = S_COMPUTE_4;
+            end
+            S_COMPUTE_4: begin
+                next_state = S_COMPUTE_1_IS;
+            end
+            S_COMPUTE_4_IS: begin
+                    if(continue_while)begin
+                        next_state = S_COMPUTE_1;
+                    end
+                    else begin
+                        next_state = S_DONE;
+                    end
+            end
+            S_DONE: begin
+                next_state = S_DONE;
+                $display("time: %0t Done!",$time);
+                valid = 1;
+            end
+        endcase
+        current_state = next_state;
+    
+    end
+end
+endmodule

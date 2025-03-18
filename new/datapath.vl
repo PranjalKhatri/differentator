@@ -1,0 +1,183 @@
+module datapath(
+    input wire clk, // Clock signal
+    input wire reset, // Reset signal
+    output reg continue_while,
+    output reg[3:0] state,
+    output reg load_a,load_dx,load_x,load_u, // Load signals
+    input  wire [3:0] in, // Input u
+    output reg signed  [15:0] out // Output
+);
+// reg [3:0] current_state;
+localparam S_IDLE = 4'b0000;
+localparam S_READ = 4'b0001;
+localparam S_COMPUTE_1 = 4'b0010;
+localparam S_COMPUTE_1_IS = 4'b0011;
+localparam S_COMPUTE_2 = 4'b0100;
+localparam S_COMPUTE_2_IS = 4'b0101;
+localparam S_COMPUTE_3 = 4'b0110;
+localparam S_COMPUTE_3_IS = 4'b0111;
+localparam S_COMPUTE_4 = 4'b1000;
+localparam S_COMPUTE_4_IS = 4'b1001;
+localparam S_DONE = 4'b1010;
+
+reg signed [3:0] dx, a;  
+reg signed [4:0] x;  
+reg signed [15:0] u, y;  // Wider bit-width to handle intermediate results
+
+reg add_sub_ctrl;
+reg signed [7:0]  m1;
+reg signed [7:0]  m2;
+reg signed [7:0]  m3;
+reg signed [7:0]  m4;
+reg signed [7:0]  a1;
+reg signed [7:0]  a2;
+
+reg signed [15:0] t1;
+reg signed [15:0] t2;
+reg signed [15:0] t3;
+reg signed [15:0] t4;
+reg signed [15:0] t5;
+reg signed [15:0] t6;
+reg signed [15:0] t7;
+reg signed [15:0] t8;
+
+wire signed [15:0] m1o;//output of multiplier 1 
+wire signed [15:0] m2o; //output of multiplier 2
+wire signed [15:0] a1o;//output of adder/subtractor 1 
+
+multiplier #(
+    .IN_WIDTH(8)
+) m1_inst (
+    .in1(m1),
+    .in2(m2),
+    .out(m1o)
+);
+multiplier #(
+    .IN_WIDTH(8)
+) m2_inst (
+    .in1(m3),
+    .in2(m4),
+    .out(m2o)
+);
+adder_subtractor #(
+    .WIDTH(16)
+) a1_inst (
+    .in1(a1),
+    .in2(a2),
+    .add_sub(add_sub_ctrl),
+    .out(a1o)
+);
+
+always @(posedge clk or posedge reset)begin
+    if(reset)begin
+        continue_while = 0;
+        x = 0;
+        dx = 0;
+        a = 0;
+        u = 0;
+        add_sub_ctrl = 0;
+        y = 0;
+        m1 = 0;
+        m2 = 0;
+        m3 = 0;
+        m4 = 0;
+        a1 = 0;
+        a2 = 0;
+        t1 = 0;
+        t2 = 0;
+        t3 = 0;
+        t4 = 0;
+        t5 = 0;
+        t6 = 0;
+        t7 = 0;
+        t8 = 0;
+
+    end else begin
+        case (state)
+            S_IDLE: begin
+                
+            end
+            S_READ: begin
+                if(load_x)begin
+                    $display("Time: %0t | INPUT: X loaded with value %d", $time, in);
+                    x = in;//TODO: check if this is correct
+                end
+                if(load_dx)begin
+                    $display("Time: %0t | INPUT: DX loaded with value %d", $time, in);
+                    dx = in;
+                end
+                if(load_a)begin
+                    $display("Time: %0t | INPUT: A loaded with value %d", $time, in);   
+                    a = in;
+                end
+                if(load_u)begin
+                    $display("Time: %0t | INPUT: U loaded with value %d", $time, in);
+                    u = in;
+                end
+            end
+
+            S_COMPUTE_1: begin
+                m1 = 2'b11;
+                m2 = dx;
+                m3 = u;
+                m4 = x;
+                add_sub_ctrl = 0;
+                a1 = dx;
+                a2 = x;
+            end
+            S_COMPUTE_1_IS: begin
+                t1 = m1o;//3dx
+                t2 = m2o;//ux
+                t3 = a1o;//x+dx
+            end
+            S_COMPUTE_2: begin
+                m1 = u;
+                m2 = dx;
+                add_sub_ctrl = 1;
+                a1 = t2;
+                a2 = y;
+            end
+            S_COMPUTE_2_IS: begin
+                t4 = m1o;//udx
+                t5 = a1o;//ux-y
+            end
+
+            S_COMPUTE_3: begin
+                m1 = t1;
+                m2 = t5;
+                add_sub_ctrl = 0;
+                a1 = y;
+                a2 = t4;
+            end
+            S_COMPUTE_3_IS: begin
+                t6 = m1o;//3dx(ux-y)
+                t7 = a1o;//y+udx
+            end
+
+            S_COMPUTE_4: begin
+                add_sub_ctrl = 1;
+                a1 = u;
+                a2 = t6;
+            end
+            S_COMPUTE_4_IS: begin
+                t8 = a1o;//u-3dx(ux-y)
+                x = t3;
+                y = t7;
+                u = t8;
+                out = y;
+                if(x < a)begin
+                    continue_while = 1;
+                   $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
+                end else begin
+                   $display("Time: %0t | OUTPUT: Y = %d while over", $time, y);
+                    continue_while = 0;
+                end
+            end
+            S_DONE: begin
+                $display("Time: %0t | OUTPUT: Y = %d", $time, y);
+            end
+        endcase
+    end
+end
+
+endmodule

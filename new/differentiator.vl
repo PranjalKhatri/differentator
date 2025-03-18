@@ -1,0 +1,42 @@
+module differentiator (
+    input wire clk, reset, ready,
+    input wire s1, s2, s3, s4,  // Control signals for input selection
+    input wire [3:0] in,        // 4-bit input
+    output wire [15:0] out,     // Computed result
+    output wire valid           // Result valid indicator
+);
+    wire [3:0] state;
+    wire load_x, load_dx, load_u, load_a;
+    
+    // Instantiate controller
+    controller ctrl (
+        .clk(clk),
+        .reset(reset),
+        .s1(s1),
+        .s2(s2),
+        .s3(s3),
+        .s4(s4),
+        .continue_while(continue_while),
+        .ready(ready),
+        .load_a(load_a),
+        .load_dx(load_dx),
+        .load_x(load_x),
+        .load_u(load_u),
+        .state(state),
+        .valid(valid)
+    );
+    
+    // Instantiate datapath
+    datapath dp (
+        .clk(clk),
+        .reset(reset),
+        .continue_while(continue_while),
+        .state(state),
+        .load_a(load_a),
+        .load_dx(load_dx),
+        .load_x(load_x),
+        .load_u(load_u),
+        .in(in),
+        .out(out)
+    );
+endmodule
