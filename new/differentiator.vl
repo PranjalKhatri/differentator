@@ -7,7 +7,7 @@ module differentiator (
 );
     wire [3:0] state;
     wire load_x, load_dx, load_u, load_a;
-    
+    wire continue_while;
     // Instantiate controller
     controller ctrl (
         .clk(clk),

@@ -1,10 +1,12 @@
+`timescale 1ns / 1ps
+
 module datapath(
     input wire clk, // Clock signal
     input wire reset, // Reset signal
-    output reg continue_while,
-    output reg[3:0] state,
-    output reg load_a,load_dx,load_x,load_u, // Load signals
+    input wire[3:0] state,
+    input wire load_a,load_dx,load_x,load_u, // Load signals
     input  wire [3:0] in, // Input u
+    output reg continue_while,
     output reg signed  [15:0] out // Output
 );
 // reg [3:0] current_state;
@@ -67,8 +69,31 @@ adder_subtractor #(
     .add_sub(add_sub_ctrl),
     .out(a1o)
 );
-
-always @(posedge clk or posedge reset)begin
+initial begin
+   continue_while = 0;
+        x = 0;
+        dx = 0;
+        a = 0;
+        u = 0;
+        add_sub_ctrl = 0;
+        y = 0;
+        m1 = 0;
+        m2 = 0;
+        m3 = 0;
+        m4 = 0;
+        a1 = 0;
+        a2 = 0;
+        t1 = 0;
+        t2 = 0;
+        t3 = 0;
+        t4 = 0;
+        t5 = 0;
+        t6 = 0;
+        t7 = 0;
+        t8 = 0;
+        out=0;
+end
+always @(posedge clk or posedge state)begin
     if(reset)begin
         continue_while = 0;
         x = 0;
@@ -91,11 +116,11 @@ always @(posedge clk or posedge reset)begin
         t6 = 0;
         t7 = 0;
         t8 = 0;
-
+        out=0;
     end else begin
+        $display("Time: %0t | datapath State: %b | X = %d | Y= %d | dx = %d | A = %d | U= %d", $time, state,x,y,dx,a,u);
         case (state)
-            S_IDLE: begin
-                
+            S_IDLE: begin                
             end
             S_READ: begin
                 if(load_x)begin
@@ -129,17 +154,19 @@ always @(posedge clk or posedge reset)begin
                 t1 = m1o;//3dx
                 t2 = m2o;//ux
                 t3 = a1o;//x+dx
+                $display("Time: %0t | Computation finished for 1IS t1(3dx): %d , t2(ux) = %d, t3(x+dx) = %d", $time,t1,t2,t3);
             end
             S_COMPUTE_2: begin
                 m1 = u;
                 m2 = dx;
-                add_sub_ctrl = 1;
+                add_sub_ctrl = 0;
                 a1 = t2;
                 a2 = y;
             end
             S_COMPUTE_2_IS: begin
                 t4 = m1o;//udx
-                t5 = a1o;//ux-y
+                t5 = a1o;//ux+y
+                $display("Time: %0t | Computation finished for 2IS t4(udx): %d , t5(ux+y) = %d", $time,t4,t5);
             end
 
             S_COMPUTE_3: begin
