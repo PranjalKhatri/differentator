@@ -146,6 +146,13 @@ always @(posedge clk or posedge state)begin
             end
 
             S_COMPUTE_1: begin
+                if(x < a or dx==0)begin
+                    continue_while = 1'b1;
+                    $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
+                end else begin
+                    $display("Time: %0t | OUTPUT: Y = %d while over", $time, y);
+                    continue_while = 0;
+                end
                 m1 = 2'b11;
                 m2 = dx;
                 m3 = u;
