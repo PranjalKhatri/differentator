@@ -207,7 +207,7 @@ always @(posedge clk or posedge state)begin
 
             end
             S_COMPUTE_4_IS_IS: begin
-                if(x < a)begin
+                if(x+1 < a)begin
                     continue_while = 1'b1;
                     $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
                 end else begin
