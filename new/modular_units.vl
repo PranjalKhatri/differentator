@@ -20,6 +20,6 @@ module adder_subtractor #(
 );
     assign out = add_sub ? (in1 - in2) : (in1 + in2);
     always @(out)begin
-    $display("Adder/Subtractor: in1 : %d in2 : %d  sub? %d out: %d", in1, in2, add_sub, out);
+    // $display("Adder/Subtractor: in1 : %d in2 : %d  sub? %d out: %d", in1, in2, add_sub, out);
     end
 endmodule

@@ -42,9 +42,9 @@ end
 
 always @(posedge clk) begin
         current_state = next_state;
-    $display("time: %0t State: %b in controller", $time, state);
+    // $display("time: %0t State: %b in controller", $time, state);
     if(reset) begin
-        $display("time: %0t Resetting controller",$time);
+        // $display("time: %0t Resetting controller",$time);
         next_state = S_IDLE;
         load_a = 0;
         load_dx = 0;
@@ -55,13 +55,13 @@ always @(posedge clk) begin
         next_state = current_state;
         case (current_state)
             S_IDLE: begin
-                $display("in idle state");
+                // $display("in idle state");
                 // if(reset == 0)begin
                     next_state = S_READ;
                 // end
             end
             S_READ: begin
-                $display("in read state");
+                // $display("in read state");
                 if (s1) begin
                     load_x = 1;  // Read x
                     load_dx = 0; load_u = 0; load_a = 0;
@@ -81,7 +81,7 @@ always @(posedge clk) begin
                     load_a = 0;
                 end
                 if(ready) begin
-                    next_state = S_COMPUTE_1;
+                    next_state = S_COMPUTE_4_IS_IS;
                 end
                 end
                 //next state is set in the input handling block
@@ -119,7 +119,7 @@ always @(posedge clk) begin
                 next_state = S_COMPUTE_4_IS_IS;
             end
             S_COMPUTE_4_IS_IS: begin
-                $display("here we are while is %d",continue_while);
+                // $display("here we are while is %d",continue_while);
                 if(continue_while==1'b1)begin
                     next_state = S_COMPUTE_1;
                 end

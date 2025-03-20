@@ -30,6 +30,10 @@ void diffeqsolver(int x, int u, int dx, int a) {
 void compute() {
 
     diffeqsolver(2,2,1,5);
+    cout<<"\n";
+    diffeqsolver(3,2,1,7);
+    cout<<"\n";
+    diffeqsolver(0,1,1,4);
 }
 
 signed main() {

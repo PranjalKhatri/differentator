@@ -122,7 +122,7 @@ always @(posedge clk or posedge state)begin
         t8 = 0;
         out=0;
     end else begin
-        $display("Time: %0t | datapath State: %b | X = %d | Y= %d | dx = %d | A = %d | U= %d", $time, state,x,y,dx,a,u);
+        // $display("Time: %0t | datapath State: %b | X = %d | Y= %d | dx = %d | A = %d | U= %d", $time, state,x,y,dx,a,u);
         case (state)
             S_IDLE: begin                
             end
@@ -186,7 +186,7 @@ always @(posedge clk or posedge state)begin
                 a2 = t4;
             end
             S_COMPUTE_3_IS: begin
-                t6 = m1o;//3dx(ux-y)
+                t6 = m1o;//3dx(ux+y)
                 t7 = a1o;//y+udx
             end
             S_COMPUTE_3_IS_IS: begin 
@@ -209,12 +209,12 @@ always @(posedge clk or posedge state)begin
             S_COMPUTE_4_IS_IS: begin
                 if(x+1 < a)begin
                     continue_while = 1'b1;
-                    $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
+                    // $display("Time: %0t | OUTPUT: Y = %d while continues", $time, y);
                 end else begin
-                    $display("Time: %0t | OUTPUT: Y = %d while over", $time, y);
+                    // $display("Time: %0t | OUTPUT: Y = %d while over", $time, y);
                     continue_while = 0;
                 end 
-                        $display("t1(3dx) : %d | t2(ux) : %d | t3(x+dx) : %d | t4(udx) : %d | t5(ux+y) : %d | t6(3dx(ux+y)) : %d | t7(y+udx) : %d | t8(u-3dx(ux+y)) : %d ",t1,t2,t3,t4,t5,t6,t7,t8);
+                        // $display("t1(3dx) : %d | t2(ux) : %d | t3(x+dx) : %d | t4(udx) : %d | t5(ux+y) : %d | t6(3dx(ux+y)) : %d | t7(y+udx) : %d | t8(u-3dx(ux+y)) : %d ",t1,t2,t3,t4,t5,t6,t7,t8);
 
                 // $display("Time: %0t | Computation finished for 1IS t1(3dx): %d , t2(ux) = %d, t3(x+dx) = %d", $time,t1,t2,t3);
             end

@@ -41,7 +41,7 @@ module differentiator_tb;
         #10 reset = 0;
 
         // Start input sequence
-        #10 in = 4'b010; s1 = 1;  // Load x->3
+        #10 in = 4'b0010; s1 = 1;  // Load x->3
         #20 s1 = 0;
 
         #10 s2 = 1;
